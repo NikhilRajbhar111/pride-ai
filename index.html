@@ -476,7 +476,7 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
   }
   @media (max-width: 480px) {
     .video-carousel-outer { height: 360px; }
-    .video-card { width: 110px; height: 210px; border-radius: 10px; }
+    .video-card { width: 110px; height: 210px; }
     .video-card.center { width: 200px; height: 330px; }
   }
 
@@ -614,6 +614,20 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
     transition: border-color 0.3s, color 0.3s;
   }
   .trainer-tag:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* Trainer photo protection: image itself is unclickable/unselectable so the
+     browser's native "save image / open image in new tab / copy image" menu
+     never has an <img> to target. Events fall through to the frame above it,
+     which still gets the hover effect and is blocked from its own right-click
+     menu via JS below. */
+  #trainer, #trainer * {
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+    -webkit-touch-callout: none; /* stops the iOS long-press "Save Image" sheet */
+  }
+  .trainer-photo-frame img {
+    pointer-events: none;
+    -webkit-user-drag: none; user-drag: none;
+  }
 
   /* OFFER */
   #offer {
@@ -1361,8 +1375,10 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
         <div class="trainer-photo-badge">AI Instructor</div>
         <!-- Replace src with actual trainer photo path -->
         <img
-          src="./assets/images/trainer-photo.jpg"
+          id="trainerPhotoImg"
+          src="https://pride-proxy.vercel.app/api/headshot"
           alt="Trainer"
+          draggable="false"
           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22533%22 viewBox=%220 0 400 533%22%3E%3Crect width=%22400%22 height=%22533%22 fill=%22%230E0E1A%22/%3E%3Ccircle cx=%22200%22 cy=%22180%22 r=%2280%22 fill=%22%23555570%22/%3E%3Cellipse cx=%22200%22 cy=%22420%22 rx=%22130%22 ry=%22110%22 fill=%22%23555570%22/%3E%3Ctext x=%22200%22 y=%22500%22 text-anchor=%22middle%22 fill=%22%2300C4CC%22 font-family=%22sans-serif%22 font-size=%2214%22%3E%3C/text%3E%3C/svg%3E'"
         />
       </div>
@@ -1649,9 +1665,26 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
   </div>
 </div>
 
+<!-- WHATSAPP JOIN MODAL — only shown after a confirmed successful payment -->
+<div class="modal-overlay" id="whatsappModalOverlay" onclick="if(event.target===this) closeWhatsappModal()">
+  <div class="modal-box" style="text-align:center;">
+    <button class="modal-close" onclick="closeWhatsappModal()" aria-label="Close">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-title">🎉 Payment Successful!</div>
+    <p class="modal-sub" style="margin-bottom:24px;">Your seat is confirmed. Tap below to join our WhatsApp group for workshop updates, reminders, and resources.</p>
+    <a href="https://chat.whatsapp.com/FMGtPS2jw3e0ZzsoU6nMW4?s=cl&p=i&ilr=2" id="whatsappJoinLink" target="_blank" rel="noopener" class="map-btn" style="background:#25D366;color:#fff;">
+      Join WhatsApp Group →
+    </a>
+  </div>
+</div>
+
 <script>
   // ====== CONFIG ======
   const RAZORPAY_PAYMENT_LINK = "https://rzp.io/rzp/8ppMWNt";
+
+  // ====== CONFIG: WhatsApp group link — shown ONLY after a confirmed payment ======
+  const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/REPLACE_WITH_YOUR_INVITE_LINK";
 
   // ====== CONFIG: Local video files + student names ======
   const testimonialVideos = [
@@ -2233,6 +2266,58 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
   ['heroRole', 'modalRole', 'offlineRole'].forEach(id => {
     const el = document.getElementById(id);
     if (el) createCustomSelect(el);
+  });
+
+  // ====== WHATSAPP GROUP — shown ONLY after a confirmed successful payment ======
+  // Razorpay Payment Links redirect back to a "Callback URL" (set this in your
+  // Razorpay dashboard for this payment link) with query params such as
+  // ?razorpay_payment_link_status=paid&razorpay_payment_id=pay_xxx. We check
+  // for that here. Without setting the Callback URL to point back at this
+  // page, this page has no way of knowing a payment succeeded, since the
+  // actual payment happens on Razorpay's own hosted page.
+  function closeWhatsappModal() {
+    document.getElementById('whatsappModalOverlay').classList.remove('open');
+  }
+
+  (function checkPaymentSuccess() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('razorpay_payment_link_status');
+    const paymentId = params.get('razorpay_payment_id');
+    if (status === 'paid' && paymentId) {
+      document.getElementById('whatsappJoinLink').href = WHATSAPP_GROUP_LINK;
+      document.getElementById('whatsappModalOverlay').classList.add('open');
+      // Clean the params off the URL so a refresh doesn't re-trigger the popup
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  })();
+
+  // ====== IMAGE / RIGHT-CLICK PROTECTION (best-effort deterrents, not foolproof) ======
+  // Right-click is blocked site-wide (not just on the trainer section) so
+  // nobody can open dev tools from elsewhere on the page and scroll down to
+  // the trainer photo. Dragging images out is also blocked everywhere.
+  // A determined person can still get around this (browser menu, view-source,
+  // or a screenshot) — this only stops the easy, one-click ways.
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('dragstart', e => {
+    if (e.target && e.target.tagName === 'IMG') e.preventDefault();
+  });
+  document.querySelectorAll('img').forEach(img => img.setAttribute('draggable', 'false'));
+
+  // Best-effort deterrent for the common dev-tools keyboard shortcuts.
+  // NOTE: this cannot fully "disable dev tools" — browsers always allow
+  // opening them from the menu (⋮ > More Tools > Developer Tools), and this
+  // does nothing to stop OS-level screenshots. It only blocks the common
+  // keyboard shortcuts as a casual deterrent.
+  document.addEventListener('keydown', function(e) {
+    const key = e.key ? e.key.toLowerCase() : '';
+    const blocked =
+      key === 'f12' ||
+      (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(key)) ||
+      (e.ctrlKey && key === 'u');
+    if (blocked) {
+      e.preventDefault();
+      return false;
+    }
   });
 </script>
 </body>
