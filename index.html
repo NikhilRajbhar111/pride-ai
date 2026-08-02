@@ -1736,7 +1736,9 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
   }
 
   function updateOfflineSubmitLabel() {
-    const payOnline = document.querySelector('input[name="offlinePayment"]:checked').value === 'online';
+    // const payOnline = document.querySelector('input[name="offlinePayment"]:checked').value === 'online';
+    const checkedInput = document.querySelector('input[name="offlinePayment"]:checked');
+    const payOnline = checkedInput ? checkedInput.value === 'online' : true;
     const submitBtn = document.getElementById('offlineSubmitBtn');
     const note = document.getElementById('offlineSubmitNote');
     if (payOnline) {
@@ -1930,7 +1932,8 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
     e.preventDefault();
     if (!validateRoleSelect('offlineRole')) return false;
     const btn = document.getElementById('offlineSubmitBtn');
-    const payOnline = document.querySelector('input[name="offlinePayment"]:checked').value === 'online';
+    // const payOnline = document.querySelector('input[name="offlinePayment"]:checked').value === 'online';
+    const payOnline = true; // payment-choice radios were removed from the UI — online is the only path now
     btn.textContent = 'Saving…';
     btn.disabled = true;
 
@@ -1940,7 +1943,7 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
       email: document.getElementById('offlineEmail').value.trim(),
       role:  document.getElementById('offlineRole').value,
       source: 'landing_page_offline',
-      paymentMethod: payOnline ? 'online' : 'pay_in_class'
+      paymentMethod: 'online'
     };
 
     await saveToSupabase(data);
@@ -2308,17 +2311,17 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
   // opening them from the menu (⋮ > More Tools > Developer Tools), and this
   // does nothing to stop OS-level screenshots. It only blocks the common
   // keyboard shortcuts as a casual deterrent.
-  document.addEventListener('keydown', function(e) {
-    const key = e.key ? e.key.toLowerCase() : '';
-    const blocked =
-      key === 'f12' ||
-      (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(key)) ||
-      (e.ctrlKey && key === 'u');
-    if (blocked) {
-      e.preventDefault();
-      return false;
-    }
-  });
+  // document.addEventListener('keydown', function(e) {
+  //   const key = e.key ? e.key.toLowerCase() : '';
+  //   const blocked =
+  //     key === 'f12' ||
+  //     (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(key)) ||
+  //     (e.ctrlKey && key === 'u');
+  //   if (blocked) {
+  //     e.preventDefault();
+  //     return false;
+  //   }
+  // });
 </script>
 </body>
 </html>
