@@ -2311,17 +2311,17 @@ src="https://www.facebook.com/tr?id=1461408268995058&ev=PageView&noscript=1"
   // opening them from the menu (⋮ > More Tools > Developer Tools), and this
   // does nothing to stop OS-level screenshots. It only blocks the common
   // keyboard shortcuts as a casual deterrent.
-  // document.addEventListener('keydown', function(e) {
-  //   const key = e.key ? e.key.toLowerCase() : '';
-  //   const blocked =
-  //     key === 'f12' ||
-  //     (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(key)) ||
-  //     (e.ctrlKey && key === 'u');
-  //   if (blocked) {
-  //     e.preventDefault();
-  //     return false;
-  //   }
-  // });
+  document.addEventListener('keydown', function(e) {
+    const key = e.key ? e.key.toLowerCase() : '';
+    const blocked =
+      key === 'f12' ||
+      (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(key)) ||
+      (e.ctrlKey && key === 'u');
+    if (blocked) {
+      e.preventDefault();
+      return false;
+    }
+  });
 </script>
 </body>
 </html>
