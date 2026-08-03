@@ -41,11 +41,12 @@
   .brand { display: flex; align-items: center; gap: 12px; }
   .brand-mark {
     font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px;
-    color: var(--bg); background: linear-gradient(135deg, var(--cyan), var(--purple));
+    color: var(--bg); 
+    /* background: linear-gradient(135deg, var(--cyan), var(--purple)); */
     width: 38px; height: 38px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
   }
-  .brand-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; }
+  .brand-text { font-weight: 800; font-size: 16px; }
   .brand-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
 
   .header-actions { display: flex; align-items: center; gap: 10px; }
@@ -183,7 +184,9 @@
 
 <header>
   <div class="brand">
-    <div class="brand-mark">P</div>
+    <div class="brand-mark">
+      <img src="./assets/images/Pride Educare logo.svg" alt="">
+    </div>
     <div>
       <div class="brand-text">AI Masterclass — Registrations</div>
       <div class="brand-sub">Pride Computer Education, Goregaon</div>
@@ -286,7 +289,6 @@
     </div>
     <div class="footer-row">
       <span id="rowCount">—</span>
-      <span>Data pulled directly from Supabase · auto-refreshes every 60s</span>
     </div>
   </div>
 
